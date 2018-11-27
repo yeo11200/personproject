@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:bean="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	
+		<!-- 메일보내기 아이디와 비밀번호 -->
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+	<property name="host" value="smtp.gmail.com"></property>
+	<!-- 포트번호가 자꾸 틀려서 에러가 발생헀다. 586이 아니라 587이다 -->
+	<property name="port" value="587"></property>
+	<property name="username" value="sksksms2@gmail.com"></property>
+	<property name="password" value="tlswlstjq1!"></property>
+	<property name="javaMailProperties">
+		<props>
+<!--                <prop key="mail.transport.protocol">smtp</prop> -->
+               <prop key="mail.smtp.auth">true</prop>
+               <prop key="mail.smtp.starttls.enable">true</prop>
+<!--                <prop key="mail.smtp.ssl.enable">true</prop> -->
+<!--                <prop key="mail.smtp.ssl.trust">smtp.gmail.com</prop> -->
+               <prop key="mail.debug">true</prop>
+         </props>
+     </property>    
+	</bean>	
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+		<!-- DB Connection 객체를 생성하는 Bean을 선언 -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<!-- DriverManagerDataSource안에 setter를 만든 것을 데이터를 넣어주기 위해서 -->
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"></property>
+		<property name="url" value="jdbc:oracle:thin:@192.168.1.31:1521:orcl"></property>
+		<property name="username" value="sin1"></property>
+		<property name="password" value="sin1"></property>
+	</bean>
+	<!-- Mybatis DB 설정해서 사용하는 객체 -->
+	<!-- 위에있는 거랑 같은 type을 써야한다. property, arg -->
+	<bean id="sqlSessionFactiory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- DB Connetion 객체를 넣어준다. -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- Mybatis 설정(config) -->
+		<!-- classpath:의 위치 ==> src/main/resources에 저장하기 위해서 classpath를 사용한다.  -->
+		<property name="configLocation" value="classpath:/mybatis-config.xml"></property>
+		<!-- Mybatis에서 실제적으로 처리해야할 sql 문장이 들어 있는 xml 파일 -->
+		<!-- /mappers : 폴더,  /** : 중간에 다른 폴더로 더 들어가게 작성해도된다, /*Mapper.xml : 앞에 무슨 문자가 나와도 되고 뒤에는 반드시 Mapper.xml로 끝나야한다. -->
+		<!-- mappers를 지정하는 곳 -->
+		<!-- mapper를 다르게 지정해도 가능한 것이 mapper의 경로를 지정해주었기 떄문이다. -->
+		<property name="mapperLocations" value="classpath:/mappers/**/*Mapper.xml"></property>
+	</bean>
+	<!-- 더 쉽게 DB처리를 할 수있는 객체 생성 : tamplate -->
+	<!-- dao 프로그램에서 사용할 객체가 된다. DI적용 -->
+	<!-- dao -> spring -> mybatis template -> mybatis - oracle -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<!-- constructor-arg -> 생성자가 있다 -->
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactiory"></constructor-arg>
+	</bean>
+	
+	<!-- 1. pom.xml에 dependency로 라이브러리가 등록되어 있어야 한다.
+		 2. root-context.xml에 Namespaces에 tx 가 설정이 되어 있어야 한다. -->
+	<tx:annotation-driven/>	
+</beans>

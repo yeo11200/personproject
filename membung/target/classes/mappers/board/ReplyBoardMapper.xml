@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sin1.mapper.ReplyBoardMapper">
+
+<!-- 댓글 리스트 보기 -->
+<!-- DB에 열이름이 잘못되어서 ORA-00904: "NO": 부적합한 식별자 에러가 발생했다 -->
+<select id="Replylist" resultType="com.sin1.board.dto.ReplyBoardDTO">
+ select * from(
+ select rownum rnum, no, rno, content, writer, writeDate
+ from(
+ <!-- 맨 처음에 데이터를 가져올 때 검색을 해서 가져온다 -->
+ select no, rno, writer, content, writeDate
+ from ReplyBoard
+ where no = #{no}
+ order by rno desc
+ )
+ )
+ where rnum between #{startRow} and #{endRow}
+</select>
+
+<insert id="ReplyWrite">
+	insert into ReplyBoard(rno, writer, content, no)
+	values(ReplyBoard_seq.nextval, #{writer}, #{content}, #{no})
+</insert>
+<!-- 댓글쓰기 -->
+<!-- <insert id="questWriter">
+	insert into ReplyBoard(rno, content, writer, refNo, ordNo, levNo, parentNo)
+	values(ReplyBoard_seq.nextval, #{content}, #{writer}, ReplyBoard_seq.nextval, 1, 0, ReplyBoard_seq.nextval)
+</insert> -->
+
+<!-- 댓글보기 -->
+<select id="ReplyView" resultType="com.sin1.board.dto.ReplyBoardDTO">
+	select *
+	from ReplyBoard
+	where rno=#{rno}
+	order by rno desc
+</select>
+
+
+ <!-- 대댓글쓰기 -->
+<!-- <insert id="answerWriter">
+	insert into ReplyBoard(rno, content, writer, refNo, ordNo, levNo, parentNo)
+	values(ReplyBoard_seq.nextval, #{content}, #{writer}, #{refNo}, #{ordNo}, #{levNo}, #{parentNo})
+</insert>
+ -->
+<!-- 댓글업데이트 -->
+<update id="ReplyUpdate">
+	update ReplyBoard set content=#{content}, writer=#{writer}
+	where rno=#{rno}
+</update>
+
+<!-- 댓글 삭제 -->
+<delete id="ReplyDelete">
+	delete from ReplyBoard
+	where no = #{no} and <if test="rno != null">rno = #{rno}</if> 
+</delete>
+<!-- 대댓글 쓰기에서 관련글의 순서번호와 같거나 큰 데이터의 순서번호를 1증가시켜야만한다. -->
+<!-- <update id="increaseOrdNo">
+	update ReplyBoard set ordNo = ordNo + 1
+	where refNo=#{refNo} and ordNo=#{ordNo}
+</update>
+ -->
+ <!-- 전체글의 갯수를 구한다 -->
+<select id="page" resultType="java.lang.Integer">
+select count(*)
+from ReplyBoard
+</select>
+ 
+ </mapper>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sin1.mapper.MessageMapper">
+	<!-- 받은 메시지 리스트 : select -->
+	<select id="list" resultType="com.sin1.message.dto.MessageDTO">
+		select * from(
+		<!-- dto에 별칭으로 된 것이 있어야 한다 -->
+			select rownum rnum, no, senderName, sender,
+			accepterName, accepter, sendDate, acceptDate
+			from(
+				<!-- 맨 처음 데이터를 가져올 때 검색을 해서 가져온다. -->
+				select no, sm.name senderName, sender, 
+				am.name accepterName, accepter, sendDate, acceptDate
+				from message m, member sm, member am
+				<!-- 내가 받은 메시지 조건 -->
+				where ( accepter = #{accepter}
+				   or sender = #{accepter} )
+				<!-- 조인 조건 -->
+				and (am.id = m.accepter and sm.id = m.sender)
+				<!-- id가 search인 tag를 찾아서 끼워 넣기를 해준다. -->
+<!-- 				<include refid="search" /> -->
+				order by sendDate desc
+				)
+			)
+<!-- 		where rnum between 1 and 10 -->
+		where rnum between #{startRow} and #{endRow}
+	</select>
+	
+<!-- 메시지 보기(읽기) : select -->
+	<select id="view" resultType="com.sin1.message.dto.MessageDTO">
+		select no, sm.name senderName, sender, 
+		am.name accepterName, accepter, sendDate, acceptDate,
+	    content
+		from message m, member sm, member am
+		where (no = #{no})
+		and (m.accepter = am.id and m.sender = sm.id)
+	</select>
+    <!-- 읽기 처리를 한다. : update -> acceptDate에 오늘 날짜로 셋팅 -->
+    <!-- acceptDate가 null(읽지 않음) 경우에만 수정이 되고 return되는 값이 1이된다.-->
+    <update id="accepted">
+        update message set acceptDate = sysdate
+        where no = #{no} and acceptDate is null
+    </update>
+    <!-- 읽지 않았던 메시지를(자바에서 확인) 읽었으면 회원의 읽지 않은 메시지의 갯수를 저장하는 컬럼을 
+      -1 시킨다. member.message -->
+    <update id="discount">
+        update member set message = message - 1
+        where id = #{id}
+    </update>
+
+<!-- 메시지 보내기 : insert -->
+	<insert id="write">
+		insert into message(no, sender, accepter, content)
+		values(message_seq.nextval, #{sender}, #{accepter},
+		#{content})
+	</insert>
+    <!-- 메시지 보내기를 하면 받는 회원의 읽지 않은 메시지의 갯수를 저장하는 컬럼을 
+      +1 시킨다. member.message -->
+    <update id="increase">
+        update member set message = message + 1
+        where id = #{id}
+    </update>
+	
+<!-- 메시지 삭제 : delete -->
+	<delete id="delete">
+		delete from message
+		where no = #{no}
+	</delete>
+	
+<!-- 전체글의 갯수를 구한다. : select -->
+	<select id="total" resultType="java.lang.Integer">
+		select count(*) from message
+		where accepter = #{accepter} or sender = #{accepter}
+		<!-- 조건이 있는 경우 조건에 맞는 데이터의 전체 갯수를 구해야 한다. -->
+<!-- 		<include refid="search" /> -->
+	</select>
+	
+<!-- 메인페이지에 표시할 읽지 않은 메시지의 갯수 구하기 : member.message -->
+    <select id="notReadCount" resultType="java.lang.Integer">
+         select message from member
+         where accepter = #{accepter} and acceptDate is null
+    </select>
+	
+	<!-- 반복되어 지거나 복잡한 경우 따로 선언을 하고 가져다 쓸 수 있도록 정의해 놓은 것 -->
+	<sql id="search">
+		where ( 
+		<!-- 검색처리를 하는 부분 -->
+		<if test="word !=null and word != ''.toString">
+			<!-- 문장 검색 -->
+			and (
+			<!-- 2글자 이상인 경우 : String 취급,
+				 한 글자인 경우:char 취급 => toString()를 이용해서 문자열로 만듬-->
+			<if test="key == 't'.toString()">
+				<!-- concat(문자열, 문자열) : 2개만 연결,
+					 "||" : 문자열 이어 붙이는 연산자 -->
+			    title like '%'||#{word}||'%'
+			</if>
+			<if test="key == 'c'.toString()">
+		        content like '%'||#{word}||'%'
+			</if>
+			<if test="key == 'all'">
+		        title like '%'||#{word}||'%'
+		        or content like '%'||#{word}||'%'
+			</if>
+			)
+		</if>
+	</sql>
+	
+</mapper>

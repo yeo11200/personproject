@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+	
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<!-- main/webapp/folder 경로를 지정해준다. -->
+	<resources mapping="/resources/**" location="/resources/" />
+	
+	<!-- 파일이 올라가면 update안에 올라갈 것이다. -->
+	<!-- webapp의 경로를 지정해준다. -->
+	<!-- 업로드 안에 모든 파일을 지정한다. -->
+	<resources mapping="/upload/**" location="/upload/" />
+	
+		<beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<beans:property name="maxUploadSize" value="100000000"></beans:property>
+	</beans:bean>
+	
+	<beans:bean id="imagePath" class="java.lang.String">
+		<beans:constructor-arg value="/upload/image"></beans:constructor-arg>
+	</beans:bean>
+	<!-- Controller에 사진 업로드 장소 바꿔야한다. -->
+	<beans:bean id="findPath" class="java.lang.String">
+		<beans:constructor-arg value="/upload/find"></beans:constructor-arg>
+	</beans:bean>
+	<beans:bean id="locatePath" class="java.lang.String">
+		<beans:constructor-arg value="/upload/locate"></beans:constructor-arg>
+	</beans:bean>
+	<beans:bean id="sellOutPath" class="java.lang.String">
+		<beans:constructor-arg value="/upload/sellOut"></beans:constructor-arg>
+	</beans:bean>
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<context:component-scan base-package="com.sin1.member" />
+	<context:component-scan base-package="com.sin1.chkId" />
+	<context:component-scan base-package="com.sin1.main" />
+	<context:component-scan base-package="com.sin1.error" />
+	<context:component-scan base-package="com.sin1.util" />
+	<context:component-scan base-package="com.sin1.find" />
+	<context:component-scan base-package="com.sin1.board" />
+	<context:component-scan base-package="com.sin1.sell" />
+	<context:component-scan base-package="com.sin1.sellOut" />
+	<context:component-scan base-package="com.sin1.locate" />
+	<context:component-scan base-package="com.sin1.notice" />
+	<context:component-scan base-package="com.sin1.qna" />
+		<context:component-scan base-package="com.sin1.message" />
+	<!-- base-package명을 올바르게 적지 않아서 에러가 발생헀다. -->
+	<!-- 패키지를 적지않아서 경로를 찾기 못했다. -->
+</beans:beans>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sin1.mapper.NoticeMemberMapper">
+<select id="list" resultType="com.sin1.member.dto.MemberDTO">
+select *
+from member
+<!-- 페이징 처리, 검색 처리 -->
+</select>
+
+<select id="view" resultType="com.sin1.member.dto.MemberDTO">
+select *
+from member
+where id=#{id}
+<!-- 자바 스크립트
+$(function(){
+	$(tbody>tr).on("click", function(){
+		var id = $(this).find("td:first").text();
+		location = "noticeMember/view.do?id="+id;
+	});
+});
+ -->
+</select>
+
+<select id="deletelist" resultType="com.sin1.member.dto.MemberDTO">
+	select *
+	from member
+	where deleteMamber is not null
+	<!-- 가지고 올 때는 is null를 사용해야하지만 넣어줄때는 =로 넣어주면 된다. -->
+</select>
+
+<update id="updateGrade">
+	update member set grade=9
+	where id=#{id}
+</update>
+
+<update id="deleteMember">
+	update member set deleteMember = ok, deleteDate = sysdate
+	where id=#{id}
+</update>
+
+<update id="updateDeleteMember">
+	update member set deleteMember = null, deleteDate = null
+	where id=#{id}
+</update>
+
+<select id="page" resultType="java.lang.Integer">
+	select count(*)
+	where member
+</select>
+<!-- 차트를 하기위해서 가지고 온다 -->
+<select id="dateChart" resultType="java.lang.Integer">
+	select count(writeDate)
+	from member
+</select>
+
+<select id="ganderChart" resultType="java.lang.Integer">
+	select count(gender)
+	from member
+</select>
+
+<select id="hobbyMember" resultType="java.lang.Integer">
+	select count(hobby)
+	from member
+</select>
+</mapper>

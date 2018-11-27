@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sin1.mapper.BoardMapper">
+
+<!-- 게시판 리스트 + 페이징 처리 -->
+<select id="list" resultType="com.sin1.board.dto.BoardDTO">
+ select * from(
+ select rownum rnum, no, title, writer, writeDate, hit
+ from(
+ <!-- 맨 처음에 데이터를 가져올 때 검색을 해서 가져온다 -->
+ select no, title, writer, writeDate, hit
+ from board
+ <!-- id가 search인 tag를 찾아서 끼워 넣기를 해준다. -->
+ <include refid="search"></include>
+ order by no desc
+ )
+ )
+ where rnum between #{startRow} and #{endRow}
+</select>
+
+<!-- 게시판 글보기 -->
+<select id="view" resultType="com.sin1.board.dto.BoardDTO">
+select *
+from board
+where no = #{no}
+</select>
+
+<!--  게시판 글 쓰기 -->
+<insert id="write">
+insert into board(no, title, content, writer)
+values(board_seq.nextval, #{title}, #{content}, #{writer})
+</insert>
+
+<!-- 글을 볼 때 조회수를 1을 증가하는 쿼리 update를 사용한다. -->
+<!-- DB에서 초기값을 0으로 줘야 조회수가 1씩 증가한다. -->
+<update id="increase">
+	update board set hit = hit + 1
+	where no = #{no}
+</update>
+
+<!-- 게시판 글 수정 -->
+<update id="update">
+update board set title=#{title}, content=#{content}, writer=#{writer}
+where no = #{no}
+</update>
+
+<!-- 게시판 글 삭제 -->
+<!-- DB에서 자식 키를 빼고 삭제를 해야 한다.
+댓글이 다 삭제가 되어야 그제 서야 삭제가 가능함 -->
+<delete id="delete">
+delete from board ReplyBoard
+where no = #{no}
+</delete>
+
+<!-- 전체글의 갯수를 구한다 -->
+<select id="page" resultType="java.lang.Integer">
+select count(*)
+from board
+<!-- 검색시에 조건에 맞는 데이터의 전체 갯수를 구한다. -->
+<include refid="search"></include>
+</select>
+
+<!--  반복되어지는 글을 사용할 때 사용하는 함수  -->
+<sql id="search">
+<!--  검색 처리하는 부분  -->
+<if test="word != null and word != ''.toString">
+	<!-- 2 = 1 -> 부정적인  -->
+	where ( 2 = 1
+	<!-- 2글자인 경우 String 취급 -->
+	<if test ="key == 't'.tostring">
+	or title like '%' || #{word} || '%'
+	</if>
+	<if test ="key == 'w'.tostring">
+	or writer like '%' || #{word} || '%'
+	</if>
+	<if test ="key == 'c'.tostring">
+	or content like '%' || #{word} || '%'
+	</if>
+	<if test ="key == 'tw'.tostring">
+	or title like '%' || #{word} || '%'
+	or writer like '%' || #{word} || '%'
+	</if>
+	<if test ="key == 'tc'.tostring">
+	or title like '%' || #{word} || '%'
+	or content like '%' || #{word} || '%'
+	</if>
+	<if test ="key == 'wc'.tostring">
+	or writer like '%' || #{word} || '%'
+	or content like '%' || #{word} || '%'
+	</if>
+	<if test ="key == 'all'.tostring">
+	or title like '%' || #{word} || '%'
+	or writer like '%' || #{word} || '%'
+	or content like '%' || #{word} || '%'
+	</if>
+	)	
+</if>
+</sql>
+</mapper>

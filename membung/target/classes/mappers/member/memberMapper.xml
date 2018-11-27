@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sin1.mapper.MemberMapper">
+<insert id="join">
+insert into member(id, pw, name, gender, email, hobby, tel)
+values(#{id}, #{pw}, #{name}, #{gender}, #{email}, #{hobby}, #{tel})
+</insert>
+
+<select id="chkId" resultType="java.lang.String">
+	select id
+	from member
+	where id=#{id}
+</select>
+
+<select id="login" resultType="com.sin1.member.dto.LoginDTO">
+	select *
+	from member
+	where id=#{id} and pw=#{pw}
+	<!--member m, grade m를 써서 에러가 발생 -> ORA-00918 : 열의 정의를 따르십시오 => 테이블 조인할 때 많이 일어나는 에러-->
+</select>
+
+<select id="view" resultType="com.sin1.member.dto.MemberDTO">
+	select *
+	from member
+	where id = #{id}
+</select>
+<select id="searchId" resultType="com.sin1.member.dto.MemberDTO">
+	select id
+	from member
+	where email=#{email} and name=#{name} and tel=#{tel} and gender=#{gender}
+</select>
+
+<select id="middleSerchPw" resultType="com.sin1.member.dto.MemberDTO">
+	select *
+	from member
+	where id=#{id} and tel=#{tel} and email=#{email}
+</select>
+
+<update id="updatePw">
+	update member set  pw = #{pw}
+	where id=#{id} and tel=#{tel} and email=#{email}
+</update>
+
+<update id="chagePw">
+	update member set pw = #{newPw}
+	where id=#{id} and pw = #{pw}
+</update>
+
+<update id="update">
+	update member set name=#{name}, tel=#{tel}, email=#{email}, hobby=#{hobby}, gender=#{gender}
+	where id=#{id}
+</update>
+
+<select id="findId" resultType="java.lang.String">
+	select pw
+	from member
+	where id=#{id}
+</select>
+</mapper>

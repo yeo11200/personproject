@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sin1.mapper.ReplySellMapper">
+<select id="ReplyList" resultType="com.sin1.sell.dto.ReplySellDTO">
+	select *
+	from(
+		select rownum rnum, rno, content, writeDate, writer
+		from (
+			select rno, content, writeDate, writer
+			from ReplySell
+			where no = #{no}
+			order by rno desc
+		)
+	)
+	where rnum between #{startRow} and #{endRow}
+</select>
+<select id="ReplyView" resultType="com.sin1.sell.dto.ReplySellDTO">
+	select *
+	from ReplySell
+	where rno=#{rno}
+</select>
+
+<insert id="ReplyWrite">
+	insert into ReplySell(rno, content, writer, no)
+	values(ReplySell_seq.nextval, #{content}, #{writer}, #{no})
+</insert>
+
+<update id="ReplyUpdate">
+	update ReplySell set content=#{content}, writer=#{writer}
+	where rno = #{rno}
+</update>
+
+<delete id="ReplyDelete">
+	delete from ReplySell
+	where rno = #{rno}
+</delete>
+
+<select id="page" resultType="java.lang.Integer">
+select count(*)
+from ReplySell 
+</select>
+</mapper>
